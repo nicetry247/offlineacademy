@@ -182,7 +182,8 @@ export default function ScanPage() {
 ├── Course Name 1/
 │   ├── 01 - Introduction/
 │   │   ├── 01 - Introduction.mp4
-│   │   ├── 01 - Introduction.srt
+│   │   ├── 01 - Introduction.en.vtt
+│   │   ├── 01 - Introduction.es.vtt
 │   │   ├── 02 - Overview.pdf
 │   │   └── 03 - Notes.txt
 │   ├── 02 - Advanced/
@@ -204,7 +205,8 @@ export default function ScanPage() {
             </pre>
             <div className="mt-3 space-y-2 text-sm text-muted-foreground">
               <p><strong>How the scanner reads it:</strong> course folder → module folder → lesson files.</p>
-              <p><strong>Matching rule:</strong> subtitle files should share the same base name as the video, like <code className="bg-background px-1.5 py-0.5 rounded">lesson.mp4</code> + <code className="bg-background px-1.5 py-0.5 rounded">lesson.srt</code>.</p>
+              <p><strong>Matching rule:</strong> subtitle files can either share the exact video base name, like <code className="bg-background px-1.5 py-0.5 rounded">lesson.mp4</code> + <code className="bg-background px-1.5 py-0.5 rounded">lesson.vtt</code>, or use language suffixes for multiple tracks, like <code className="bg-background px-1.5 py-0.5 rounded">lesson.en.vtt</code> + <code className="bg-background px-1.5 py-0.5 rounded">lesson.es.vtt</code>.</p>
+              <p><strong>Subtitle formats:</strong> <code className="bg-background px-1.5 py-0.5 rounded">.vtt</code> is preferred for browser playback; <code className="bg-background px-1.5 py-0.5 rounded">.srt</code> files are detected and listed as best-effort tracks.</p>
               <p><strong>Sorting:</strong> numeric prefixes like <code className="bg-background px-1.5 py-0.5 rounded">01</code>, <code className="bg-background px-1.5 py-0.5 rounded">02</code>, <code className="bg-background px-1.5 py-0.5 rounded">10</code> keep lessons in learning order.</p>
             </div>
           </CardContent>

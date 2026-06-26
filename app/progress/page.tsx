@@ -103,7 +103,7 @@ const liveGroups: FeatureGroup[] = [
     items: [
       'Bookmarks with timestamp notes',
       'Jump-to-time bookmark playback',
-      'Subtitle support for .srt and .vtt',
+      'Multi-language subtitle tracks for .vtt/.srt files',
       'Inline document viewing for lessons',
     ],
   },

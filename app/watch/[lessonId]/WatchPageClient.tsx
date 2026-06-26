@@ -21,6 +21,15 @@ import Link from 'next/link'
 import { formatDuration, formatTime, cn } from '@/lib/utils'
 import { getCourseDisplayName } from '@/lib/course-display'
 
+interface SubtitleTrackType {
+  id?: string
+  src: string
+  lang: string
+  label: string
+  format?: string
+  isDefault: boolean
+}
+
 interface LessonType {
   id: string
   title: string
@@ -33,6 +42,7 @@ interface LessonType {
   filePath: string
   thumbnail: string | null
   subtitlePath: string | null
+  subtitles?: SubtitleTrackType[]
   progress?: { completed: boolean; position: number; lastWatched: string } | null
   quiz?: {
     version: 1
@@ -118,13 +128,28 @@ function markCompleteFn(lessonId: string, courseId: string, moduleId: string, po
 }
 
 function VideoContent({ lesson, lessonProgress, onSave, onEnd, onTimeUpdate, seekRequest }: {
-  lesson: { id: string; filePath: string; thumbnail: string | null; duration: number | null; subtitlePath: string | null }
+  lesson: { id: string; filePath: string; thumbnail: string | null; duration: number | null; subtitlePath: string | null; subtitles?: SubtitleTrackType[] }
   lessonProgress: { completed: boolean; position: number; lastWatched: string }
   onSave: (position: number) => void
   onEnd: () => void
   onTimeUpdate: (time: number) => void
   seekRequest: { time: number; nonce: number } | null
 }) {
+  const subtitleTracks = React.useMemo(() => {
+    if (lesson.subtitles && lesson.subtitles.length > 0) {
+      return lesson.subtitles.map(track => ({
+        src: '/api/files/' + track.src,
+        srcLang: track.lang,
+        label: track.label,
+        default: track.isDefault,
+      }))
+    }
+
+    return lesson.subtitlePath
+      ? [{ src: '/api/files/' + lesson.subtitlePath, srcLang: 'en', label: 'English', default: true }]
+      : []
+  }, [lesson.subtitlePath, lesson.subtitles])
+
   return (
     <VideoPlayer
       src={'/api/files/' + lesson.filePath}
@@ -135,7 +160,7 @@ function VideoContent({ lesson, lessonProgress, onSave, onEnd, onTimeUpdate, see
       onProgressSave={onSave}
       onEnded={onEnd}
       seekRequest={seekRequest}
-      subtitles={lesson.subtitlePath ? '/api/files/' + lesson.subtitlePath : undefined}
+      subtitles={subtitleTracks}
     />
   )
 }

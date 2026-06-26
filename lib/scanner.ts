@@ -8,6 +8,7 @@ import { getLocalThumbnailUrl } from '@/lib/thumbnail-index-server'
 import { ensureModuleQuizCache, syncQuizLessonFromCache, shouldSkipQuizGeneration } from '@/lib/quiz'
 import { applyCourseMetadata, isMetadataFileName, readCourseMetadataFile } from '@/lib/course-metadata'
 import { getLocalCourseThumbnailPath, ensurePublicThumbnail } from '@/lib/course-thumbnail-utils'
+import { buildSubtitleTrackMap } from '@/lib/subtitles'
 import { writeFile, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 
@@ -557,16 +558,31 @@ async function scanLessons(
       .filter(e => e.isFile() && !e.name.startsWith('.'))
       .sort((a, b) => naturalSort(a.name, b.name))
 
-    // Build a map of subtitle files by their base name (for matching with videos)
-    const subtitleMap = new Map<string, string>()
-    for (const file of files) {
-      const ext = extname(file.name).slice(1).toLowerCase()
-      if (['srt', 'vtt'].includes(ext)) {
-        const baseName = basename(file.name, extname(file.name))
-        const relativePath = relative(coursesRoot, join(modulePath, file.name)).replace(/\\/g, '/')
-        subtitleMap.set(baseName, relativePath)
+    const subtitleFiles = files.filter(file => ['srt', 'vtt'].includes(extname(file.name).slice(1).toLowerCase()))
+
+    // Filter files to only include supported lesson types. Subtitle files are attached to videos, not created as lessons.
+    const supportedFiles = files.filter(file => {
+      if (file.name === 'quiz_cache.json' || isMetadataFileName(file.name)) {
+        return false
       }
-    }
+
+      const mimeType = getMimeType(file.name)
+      const lessonType = getLessonType(mimeType)
+      if (lessonType === 'OTHER' && !['json', 'txt'].includes(extname(file.name).slice(1).toLowerCase())) {
+        return false
+      }
+      if (['srt', 'vtt'].includes(extname(file.name).slice(1).toLowerCase())) {
+        return false
+      }
+      return true
+    })
+
+    const selectedFiles = supportedFiles.slice(0, maxLessonsPerCourse)
+    const subtitleMap = buildSubtitleTrackMap(
+      selectedFiles.map(file => file.name),
+      subtitleFiles.map(file => file.name),
+      (fileName) => relative(coursesRoot, join(modulePath, fileName)).replace(/\\/g, '/')
+    )
 
     // Get existing lessons in one query
     const existingLessons = await prisma.lesson.findMany({
@@ -575,90 +591,82 @@ async function scanLessons(
     })
     const existingLessonMap = new Map(existingLessons.map(l => [l.slug, l]))
 
-    // Filter files to only include supported types
-    const supportedFiles = files.filter(file => {
-      if (file.name === 'quiz_cache.json' || isMetadataFileName(file.name)) {
-        return false
-      }
+    const lessonRecords: Array<{ slug: string; baseName: string }> = []
 
+    for (let index = 0; index < selectedFiles.length; index += 1) {
+      const file = selectedFiles[index]
+      const relativePath = relative(coursesRoot, join(modulePath, file.name)).replace(/\\/g, '/')
       const mimeType = getMimeType(file.name)
       const lessonType = getLessonType(mimeType)
-      if (lessonType === 'OTHER' && !['json', 'txt', 'srt', 'vtt'].includes(extname(file.name).slice(1))) {
-        return false
-      }
-      // Skip subtitle files for lesson creation - they'll be attached to videos
-      if (['srt', 'vtt'].includes(extname(file.name).slice(1).toLowerCase())) {
-        return false
-      }
-      return true
-    })
+      const baseName = basename(file.name, extname(file.name))
+      const baseSlug = slugify(baseName)
 
-    // Prepare lesson upserts
-    const lessonUpserts = supportedFiles
-      .slice(0, maxLessonsPerCourse)
-      .map((file, index) => {
-        const relativePath = relative(coursesRoot, join(modulePath, file.name)).replace(/\\/g, '/')
-        const mimeType = getMimeType(file.name)
-        const lessonType = getLessonType(mimeType)
-        const baseName = basename(file.name, extname(file.name))
-        const baseSlug = slugify(baseName)
-
-        let lessonSlug = baseSlug
-        if (moduleSeenSlugs.has(lessonSlug)) {
-          const typedSlug = `${baseSlug}-${lessonType.toLowerCase()}`
-          lessonSlug = typedSlug
-          let suffix = 2
-          while (moduleSeenSlugs.has(lessonSlug)) {
-            lessonSlug = `${typedSlug}-${suffix}`
-            suffix += 1
-          }
+      let lessonSlug = baseSlug
+      if (moduleSeenSlugs.has(lessonSlug)) {
+        const typedSlug = `${baseSlug}-${lessonType.toLowerCase()}`
+        lessonSlug = typedSlug
+        let suffix = 2
+        while (moduleSeenSlugs.has(lessonSlug)) {
+          lessonSlug = `${typedSlug}-${suffix}`
+          suffix += 1
         }
-        moduleSeenSlugs.add(lessonSlug)
+      }
+      moduleSeenSlugs.add(lessonSlug)
 
-        // Check if there's a matching subtitle file
-        const subtitlePath = subtitleMap.get(baseName) || null
+      const subtitleTracks = subtitleMap.get(baseName) || []
+      const defaultSubtitle = subtitleTracks.find(track => track.isDefault) || subtitleTracks[0] || null
 
-        return {
-          where: { moduleId_slug: { moduleId, slug: lessonSlug } },
-          update: {
-            title: baseName,
-            order: index,
-            filePath: relativePath,
-            fileName: file.name,
-            mimeType,
-            type: lessonType,
-            duration: null,
-            thumbnail: null,
-            subtitlePath,
-          },
-          create: {
-            title: baseName,
-            slug: lessonSlug,
-            order: index,
-            filePath: relativePath,
-            fileName: file.name,
-            mimeType,
-            type: lessonType,
-            duration: null,
-            thumbnail: null,
-            subtitlePath,
-            moduleId,
-          },
-        }
+      const lesson = await prisma.lesson.upsert({
+        where: { moduleId_slug: { moduleId, slug: lessonSlug } },
+        update: {
+          title: baseName,
+          order: index,
+          filePath: relativePath,
+          fileName: file.name,
+          mimeType,
+          type: lessonType,
+          duration: null,
+          thumbnail: null,
+          subtitlePath: defaultSubtitle?.src || null,
+        },
+        create: {
+          title: baseName,
+          slug: lessonSlug,
+          order: index,
+          filePath: relativePath,
+          fileName: file.name,
+          mimeType,
+          type: lessonType,
+          duration: null,
+          thumbnail: null,
+          subtitlePath: defaultSubtitle?.src || null,
+          moduleId,
+        },
       })
 
-    if (lessonUpserts.length > 0) {
-      await prisma.$transaction(
-        lessonUpserts.map(upsert => prisma.lesson.upsert(upsert))
-      )
+      await prisma.$transaction([
+        prisma.subtitleTrack.deleteMany({ where: { lessonId: lesson.id } }),
+        ...subtitleTracks.map(track => prisma.subtitleTrack.create({
+          data: {
+            lessonId: lesson.id,
+            src: track.src,
+            lang: track.lang,
+            label: track.label,
+            format: track.format,
+            isDefault: track.src === defaultSubtitle?.src,
+          },
+        })),
+      ])
+
+      lessonRecords.push({ slug: lessonSlug, baseName })
     }
 
     const moduleShouldSkipQuiz = await shouldSkipQuizGeneration(modulePath, basename(modulePath))
 
     // Update counts for non-quiz lessons first
-    const newLessons = lessonUpserts.filter(u => !existingLessonMap.has(u.where.moduleId_slug.slug))
+    const newLessons = lessonRecords.filter(record => !existingLessonMap.has(record.slug))
     result.lessonsCreated += newLessons.length
-    result.lessonsUpdated += lessonUpserts.length - newLessons.length
+    result.lessonsUpdated += lessonRecords.length - newLessons.length
 
     if (!moduleShouldSkipQuiz) {
       if (autoFetchQuizzes) {
@@ -677,7 +685,7 @@ async function scanLessons(
         courseRoot: coursesRoot,
         topic: basename(modulePath),
         source: quizApiSource,
-        lessonOrder: lessonUpserts.length,
+        lessonOrder: lessonRecords.length,
         autoFetch: autoFetchQuizzes,
       })
 
