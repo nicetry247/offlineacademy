@@ -21,7 +21,7 @@ services:
       NEXT_PUBLIC_APP_URL: http://localhost:6969
     volumes:
       # Automatically creates ./My_Courses on the host if it doesn't exist
-      - ./My_Courses:/app/My_Courses
+      - /mnt/usb-datastore/courses:/app/My_Courses
       
       # Automatically creates ./prisma_data on the host to hold dev.db safely
       - ./prisma_data:/app/prisma/data
