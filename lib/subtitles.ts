@@ -142,3 +142,29 @@ export function sortSubtitleTracks(tracks: SubtitleTrackInput[]): SubtitleTrackI
     return a.label.localeCompare(b.label)
   })
 }
+
+export function convertSrtToVtt(content: string): string {
+  const normalized = content
+    .replace(/^\uFEFF/, '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .trim()
+
+  if (!normalized) return 'WEBVTT\n\n'
+  if (normalized.startsWith('WEBVTT')) return normalized.endsWith('\n') ? normalized : `${normalized}\n`
+
+  const vttBody = normalized
+    .split('\n')
+    .map(line => {
+      if (/^\d+$/.test(line.trim())) return ''
+      return line.replace(
+        /(\d{2}:\d{2}:\d{2}),(\d{3})\s+-->\s+(\d{2}:\d{2}:\d{2}),(\d{3})/g,
+        '$1.$2 --> $3.$4'
+      )
+    })
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+  return `WEBVTT\n\n${vttBody}\n`
+}

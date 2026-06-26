@@ -457,7 +457,7 @@ Supported video extensions include common browser-playable formats such as `.mp4
 
 ### Subtitles
 
-OfflineAcademy supports subtitle files stored beside the matching video. Use `.vtt` for the best browser compatibility; `.srt` files are detected as best-effort tracks.
+OfflineAcademy supports subtitle files stored beside the matching video. `.vtt` files are served directly; `.srt` files are detected and converted to browser-compatible WebVTT when served to the video player.
 
 Single subtitle track:
 

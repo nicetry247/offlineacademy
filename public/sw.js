@@ -1,7 +1,7 @@
-// OfflineAcademy Service Worker v3 — Minimal, Chrome-install-criteria focused
+// OfflineAcademy Service Worker v4 — Offline support without stale Next.js dev chunks
 // Logs to console so you can verify it's controlling the page
 
-const CACHE = "oa-v5"
+const CACHE = "oa-v6"
 const ASSETS = [
   '/',
   '/site.webmanifest',
@@ -28,6 +28,22 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url)
   console.log('[SW] Fetch:', url.pathname)
+
+  // Never cache Next.js runtime/dev chunks or HMR/RSC payloads. Stale chunks can keep old runtime errors alive.
+  if (
+    url.pathname.startsWith('/_next/') ||
+    url.pathname === '/__nextjs_original-stack-frame' ||
+    url.pathname === '/__nextjs_launch-editor'
+  ) {
+    e.respondWith(fetch(e.request))
+    return
+  }
+
+  // Keep analytics fully live while debugging/runtime data is dynamic.
+  if (url.pathname === '/analytics') {
+    e.respondWith(fetch(e.request))
+    return
+  }
 
   // Navigation (main page) — network first, cache fallback
   if (e.request.mode === 'navigate') {
@@ -86,4 +102,4 @@ self.addEventListener('message', e => {
   }
 })
 
-console.log('[SW] Loaded - version 3')
+console.log('[SW] Loaded - version 4')

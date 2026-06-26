@@ -410,6 +410,18 @@ export function VideoPlayer({
     }
   }, [selectedSubtitle, subtitles])
 
+  const hasSubtitles = Boolean(subtitles && subtitles.length > 0)
+  const captionsEnabled = selectedSubtitle !== 'off'
+  const toggleCaptions = () => {
+    if (!hasSubtitles) return
+    if (captionsEnabled) {
+      setSelectedSubtitle('off')
+      return
+    }
+    const defaultIndex = subtitles?.findIndex(track => track.default) ?? -1
+    setSelectedSubtitle(defaultIndex >= 0 ? defaultIndex : 0)
+  }
+
   return (
     <div
       className="video-player-container"
@@ -562,6 +574,22 @@ export function VideoPlayer({
                 aria-label="Volume"
               />
             </div>
+
+            {hasSubtitles && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'text-white hover:bg-white/20 font-bold text-xs',
+                  captionsEnabled && 'bg-primary text-primary-foreground hover:bg-primary/90'
+                )}
+                onClick={toggleCaptions}
+                aria-label={captionsEnabled ? 'Turn captions off' : 'Turn captions on'}
+                title={captionsEnabled ? 'Captions on' : 'Captions off'}
+              >
+                CC
+              </Button>
+            )}
 
             {/* Fullscreen - FIRST */}
             <Button

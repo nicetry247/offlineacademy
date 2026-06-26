@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { existsSync, statSync, createReadStream } from 'fs'
+import { readFile } from 'fs/promises'
 import { join, resolve } from 'path'
 import { getCoursesRootPath } from '@/lib/scanner'
+import { convertSrtToVtt } from '@/lib/subtitles'
 
 export async function GET(
   request: NextRequest,
@@ -79,6 +80,22 @@ export async function GET(
       txt: 'text/plain; charset=utf-8',
     }
     const contentType = mimeTypes[actualExt || ''] || 'application/octet-stream'
+
+    // Browsers expect WebVTT for <track>. Serve .srt subtitles as converted WebVTT.
+    if (actualExt === 'srt') {
+      const srtContent = await readFile(actualPath, 'utf8')
+      const vttContent = convertSrtToVtt(srtContent)
+      return new NextResponse(vttContent, {
+        status: 200,
+        headers: {
+          'Content-Length': Buffer.byteLength(vttContent, 'utf8').toString(),
+          'Content-Type': 'text/vtt; charset=utf-8',
+          'Cache-Control': 'no-cache',
+          'Content-Disposition': `inline; filename="${actualPath.split('/').pop()?.replace(/\.srt$/i, '.vtt')}"`,
+          'X-Content-Type-Options': 'nosniff',
+        },
+      })
+    }
     
     // Handle range requests (video seeking)
     if (range) {

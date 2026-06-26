@@ -1,4 +1,4 @@
-import { buildSubtitleTrackMap, languageCodeToLabel, normalizeSubtitleLang } from '@/lib/subtitles'
+import { buildSubtitleTrackMap, convertSrtToVtt, languageCodeToLabel, normalizeSubtitleLang } from '@/lib/subtitles'
 
 function assert(condition: unknown, message: string) {
   if (!condition) {
@@ -33,5 +33,10 @@ assert(otherTracks[0].lang === 'ja' && otherTracks[0].label === 'Japanese', 'Jap
 assert(normalizeSubtitleLang('PT-br') === 'pt-BR', 'pt-BR normalization failed')
 assert(languageCodeToLabel('fil') === 'Filipino', 'Filipino label failed')
 assert(!tracks.has('unrelated'), 'unrelated subtitle should not create a track group')
+
+const converted = convertSrtToVtt('1\n00:00:01,250 --> 00:00:04,500\nHello captions\n')
+assert(converted.startsWith('WEBVTT'), 'SRT conversion should emit WEBVTT header')
+assert(converted.includes('00:00:01.250 --> 00:00:04.500'), 'SRT conversion should rewrite comma timestamps')
+assert(!converted.includes('00:00:01,250'), 'SRT conversion should not keep comma timestamps')
 
 console.log('subtitle parser verification passed')
