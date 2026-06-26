@@ -4,6 +4,13 @@ on:
   push:
     branches: ['main']
     tags: ['v*']
+    paths-ignore:
+      - 'README.md'
+      - 'FEATURE_SUMMARY.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.env.example'
 
 jobs:
   build-and-push:
