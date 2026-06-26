@@ -120,22 +120,29 @@ OfflineAcademy is designed for **single-user local/LAN deployments**: home serve
 
 ## Screenshots
 
-Add screenshots here after cloning or publishing the repository.
+### Dashboard
 
-Recommended images:
+Browse courses, continue the most recent lesson, filter your library, and see learning stats at a glance.
 
-```text
-docs/screenshots/dashboard.png
-docs/screenshots/course-page.png
-docs/screenshots/watch-page.png
-docs/screenshots/settings.png
-```
-
-Example Markdown:
-
-```md
 ![OfflineAcademy dashboard](docs/screenshots/dashboard.png)
-```
+
+### Course Page
+
+View course progress, modules, lessons, and quick actions from a focused course detail page.
+
+![OfflineAcademy course page](docs/screenshots/course-page.png)
+
+### Watch Page
+
+Watch lessons with progress tracking, course navigation, and bookmark notes in one place.
+
+![OfflineAcademy watch page](docs/screenshots/watch-page.png)
+
+### Settings
+
+Configure the course directory, quiz provider, auto-fetch behavior, and API key from the local settings page.
+
+![OfflineAcademy settings page](docs/screenshots/settings.png)
 
 ---
 
