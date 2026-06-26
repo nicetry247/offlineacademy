@@ -24,8 +24,8 @@
 - [Feature Highlights](#feature-highlights)
 - [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
-- [Quick Start](#quick-start)
-- [Docker Deployment](#docker-deployment)
+- [Quick Start: Docker Hub](#quick-start-docker-hub)
+- [Other Deployment Options](#other-deployment-options)
 - [Configuration](#configuration)
 - [Course Folder Structure](#course-folder-structure)
 - [Data & Persistence](#data--persistence)
@@ -111,8 +111,9 @@ OfflineAcademy is designed for **single-user local/LAN deployments**: home serve
 
 ### Deployment-Friendly
 
-- Local Node.js deployment.
-- Docker and Docker Compose support.
+- Docker Hub image for the fastest install.
+- Docker Compose support for repeatable local/LAN deployment.
+- Local Node.js deployment for development or customization.
 - Portable folder mounts for courses and database.
 - Suitable for trusted LAN/homelab environments.
 
@@ -154,27 +155,118 @@ Styling       Tailwind CSS, Radix UI
 Database      SQLite
 ORM           Prisma
 Runtime       Node.js
-Deploy        Docker / Docker Compose or local Node.js
+Deploy        Docker Hub / Docker Compose recommended; local Node.js supported
 ```
 
 ---
 
-## Quick Start
+## Quick Start: Docker Hub
+
+Docker is the recommended way to run OfflineAcademy.
+
+It avoids local Node.js setup, uses the published image, and keeps your courses/database mounted outside the container.
 
 ### Prerequisites
+
+- Docker
+- Docker Compose
+- A folder containing your course videos
+
+### 1. Create an app folder
+
+```bash
+mkdir -p offlineacademy/My_Courses offlineacademy/prisma
+cd offlineacademy
+```
+
+### 2. Download the Docker Compose file and environment template
+
+```bash
+curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/nicetry247/offlineacademy/main/docker-compose.hub.yml
+curl -fsSL -o .env https://raw.githubusercontent.com/nicetry247/offlineacademy/main/.env.example
+```
+
+### 3. Create the SQLite database file
+
+```bash
+touch prisma/dev.db
+```
+
+### 4. Start OfflineAcademy
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Open:
+
+```text
+http://localhost:6767
+```
+
+For another device on your LAN, replace `localhost` with your server IP:
+
+```text
+http://YOUR_SERVER_IP:6767
+```
+
+### Docker Hub Image
+
+OfflineAcademy is published on Docker Hub:
+
+```text
+https://hub.docker.com/r/nicetry247/offlineacademy
+```
+
+Available tags:
+
+```text
+nicetry247/offlineacademy:latest
+nicetry247/offlineacademy:1.0.0
+```
+
+Direct pull:
+
+```bash
+docker pull nicetry247/offlineacademy:latest
+```
+
+---
+
+## Other Deployment Options
+
+### Build locally from source with Docker
+
+Use this if you want to modify the app and build your own image locally.
+
+```bash
+git clone https://github.com/nicetry247/offlineacademy.git
+cd offlineacademy
+cp .env.example .env
+mkdir -p My_Courses prisma
+touch prisma/dev.db
+docker compose up --build -d
+```
+
+### Local Node.js development
+
+Use this for development, debugging, or source-level customization.
+
+#### Prerequisites
 
 - Node.js 18+ recommended
 - npm
 - A folder containing your course videos
 
-### 1. Clone the repository
+#### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/offlineacademy.git
+git clone https://github.com/nicetry247/offlineacademy.git
 cd offlineacademy
 ```
 
-### 2. Create your environment file
+#### 2. Create your environment file
 
 ```bash
 cp .env.example .env
@@ -189,22 +281,20 @@ NEXT_PUBLIC_APP_URL="http://localhost:6767"
 QUIZAPI_KEY=""
 ```
 
-### 3. Install dependencies
+#### 3. Install dependencies
 
 ```bash
 npm ci
 ```
 
-### 4. Prepare the database
+#### 4. Prepare the database
 
 ```bash
 npx prisma generate
 npx prisma db push
 ```
 
-### 5. Add courses
-
-Create a course folder:
+#### 5. Add courses
 
 ```bash
 mkdir -p My_Courses
@@ -212,79 +302,11 @@ mkdir -p My_Courses
 
 Place your course folders inside `My_Courses`.
 
-### 6. Build and run
+#### 6. Build and run
 
 ```bash
 npm run build
 npx next start -p 6767
-```
-
-Open:
-
-```text
-http://localhost:6767
-```
-
----
-
-## Docker Deployment
-
-Docker is the recommended deployment path for most users.
-
-### Option A: Use the Docker Hub image
-
-OfflineAcademy is published on Docker Hub:
-
-```text
-https://hub.docker.com/r/nicetry247/offlineacademy
-```
-
-Available image tags:
-
-```text
-nicetry247/offlineacademy:latest
-nicetry247/offlineacademy:1.0.0
-```
-
-Users can run OfflineAcademy without building from source:
-
-```bash
-mkdir -p offlineacademy/My_Courses offlineacademy/prisma
-cd offlineacademy
-curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/nicetry247/offlineacademy/main/docker-compose.hub.yml
-curl -fsSL -o .env https://raw.githubusercontent.com/nicetry247/offlineacademy/main/.env.example
-touch prisma/dev.db
-docker compose pull
-docker compose up -d
-```
-
-Or pull the image directly:
-
-```bash
-docker pull nicetry247/offlineacademy:latest
-```
-
-Open:
-
-```text
-http://localhost:6767
-```
-
-For LAN access, replace `localhost` with your server IP:
-
-```text
-http://YOUR_SERVER_IP:6767
-```
-
-### Option B: Build locally from source
-
-```bash
-git clone https://github.com/nicetry247/offlineacademy.git
-cd offlineacademy
-cp .env.example .env
-mkdir -p My_Courses prisma
-touch prisma/dev.db
-docker compose up --build -d
 ```
 
 ### Custom Course Folder
@@ -316,8 +338,10 @@ Maintainers can publish manually:
 
 ```bash
 docker login
-docker build -t nicetry247/offlineacademy:latest .
+docker build --no-cache -t nicetry247/offlineacademy:latest .
+docker tag nicetry247/offlineacademy:latest nicetry247/offlineacademy:1.0.0
 docker push nicetry247/offlineacademy:latest
+docker push nicetry247/offlineacademy:1.0.0
 ```
 
 You can also automate Docker Hub publishing later with GitHub Actions. To do that, add repository secrets for:
