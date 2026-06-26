@@ -18,6 +18,7 @@
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
   <img alt="Prisma" src="https://img.shields.io/badge/Prisma-SQLite-2D3748?logo=prisma" />
   <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white" />
+  <a href="https://ko-fi.com/nicetry247"><img alt="Support OfflineAcademy on Ko-fi" src="docs/assets/kofi-fire.gif" height="20" /></a>
 </p>
 
 ---
