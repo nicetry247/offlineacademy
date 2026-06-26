@@ -1,5 +1,5 @@
-import { prisma } from '/home/afterhours/offlineacademy/lib/prisma'
-import { ensureModuleQuizCache, syncQuizLessonFromCache } from '/home/afterhours/offlineacademy/lib/quiz'
+import { prisma } from '@/lib/prisma'
+import { syncQuizLessonFromCache } from '@/lib/quiz'
 import { join, dirname, basename } from 'path'
 
 async function main() {
