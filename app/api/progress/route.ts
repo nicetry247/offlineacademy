@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getAnalyticsData } from '@/lib/analytics'
 import { z } from 'zod'
 
 const progressSchema = z.object({
@@ -165,89 +166,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (type === 'analytics') {
-      // Get analytics data for dashboard
-      const allProgress = await prisma.progress.findMany({
-        where: {
-          userId: 'local-user',
-          course: { hidden: false },
-        },
-      })
-
-      const completedLessons = allProgress.filter(p => p.lessonId && p.completed)
-      const inProgressLessons = allProgress.filter(p => p.lessonId && !p.completed && p.position > 0)
-      const notStartedCount = await prisma.lesson.count({
-        where: {
-          module: { course: { hidden: false } },
-          progress: { none: { userId: 'local-user' } },
-        },
-      })
-
-      const totalCourses = await prisma.course.count({ where: { hidden: false } })
-      const completedCourses = await prisma.progress.count({
-        where: {
-          userId: 'local-user',
-          lessonId: null,
-          moduleId: null,
-          completed: true,
-          course: { hidden: false },
-        },
-      })
-      const inProgressCourses = await prisma.progress.count({
-        where: {
-          userId: 'local-user',
-          lessonId: null,
-          moduleId: null,
-          completed: false,
-          course: { hidden: false },
-        },
-      })
-
-      // Calculate total watched time (in seconds)
-      const totalWatchedSeconds = allProgress.reduce((sum, p) => sum + (p.position || 0), 0)
-
-      // Get weekly activity (last 7 days)
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      const recentProgress = allProgress.filter(p => new Date(p.lastWatched) >= sevenDaysAgo)
-      const weeklyWatchedSeconds = recentProgress.reduce((sum, p) => sum + (p.position || 0), 0)
-      const weeklyCompleted = recentProgress.filter(p => p.lessonId && p.completed).length
-
-      // Lessons by type
-      const lessonsByType = await prisma.lesson.groupBy({
-        by: ['type'],
-        _count: true,
-        where: { module: { course: { hidden: false } } },
-      })
-
-      // Completed lessons by type
-      const completedByType: Record<string, number> = {}
-      for (const p of completedLessons) {
-        if (!p.lessonId) continue
-        const lesson = await prisma.lesson.findUnique({ where: { id: p.lessonId }, select: { type: true } })
-        if (lesson) {
-          completedByType[lesson.type] = (completedByType[lesson.type] || 0) + 1
-        }
-      }
-
-      return NextResponse.json({
-        totalCourses,
-        completedCourses,
-        inProgressCourses,
-        totalLessons: completedLessons.length + inProgressLessons.length + notStartedCount,
-        completedLessons: completedLessons.length,
-        inProgressLessons: inProgressLessons.length,
-        notStartedLessons: notStartedCount,
-        totalWatchedHours: Math.round(totalWatchedSeconds / 3600 * 10) / 10,
-        totalWatchedMinutes: Math.round(totalWatchedSeconds / 60),
-        weeklyWatchedHours: Math.round(weeklyWatchedSeconds / 3600 * 10) / 10,
-        weeklyWatchedMinutes: Math.round(weeklyWatchedSeconds / 60),
-        weeklyCompletedLessons: weeklyCompleted,
-        lessonsByType,
-        completedByType,
-        completionRate: totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0,
-        lessonCompletionRate: (completedLessons.length + inProgressLessons.length + notStartedCount) > 0
-          ? Math.round((completedLessons.length / (completedLessons.length + inProgressLessons.length + notStartedCount)) * 100)
-          : 0,
-      })
+      return NextResponse.json(await getAnalyticsData())
     }
 
     if (lessonId) {

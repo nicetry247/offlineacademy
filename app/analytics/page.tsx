@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Header } from '@/components/Header'
+import { getAnalyticsData } from '@/lib/analytics'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -21,36 +22,6 @@ import {
 export const metadata: Metadata = {
   title: 'Analytics',
   description: 'Learning analytics and progress overview.',
-}
-
-interface AnalyticsData {
-  totalCourses: number
-  completedCourses: number
-  inProgressCourses: number
-  totalLessons: number
-  completedLessons: number
-  inProgressLessons: number
-  notStartedLessons: number
-  totalWatchedHours: number
-  totalWatchedMinutes: number
-  weeklyWatchedHours: number
-  weeklyWatchedMinutes: number
-  weeklyCompletedLessons: number
-  lessonsByType: Array<{ type: string; _count: number }>
-  completedByType: Record<string, number>
-  completionRate: number
-  lessonCompletionRate: number
-}
-
-async function getAnalyticsData(): Promise<AnalyticsData> {
-  const res = await fetch('/api/progress?type=analytics', {
-    cache: 'no-store',
-    next: { tags: ['analytics'] },
-  })
-  if (!res.ok) {
-    throw new Error('Failed to fetch analytics')
-  }
-  return res.json()
 }
 
 const lessonTypeIcons: Record<string, React.ReactNode> = {
