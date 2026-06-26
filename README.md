@@ -19,10 +19,7 @@
   <img alt="Prisma" src="https://img.shields.io/badge/Prisma-SQLite-2D3748?logo=prisma" />
   <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white" />
   <a href="https://ko-fi.com/nicetry247" target="_blank" rel="noopener noreferrer">
-    <span style="display:inline-flex;align-items:center;gap:4px;background:#ffffff;border:1px solid #d0d7de;border-radius:999px;padding:2px 7px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:600;color:#24292f;line-height:14px;box-shadow:0 1px 0 rgba(0,0,0,0.04);">
-      <img alt="☕" src="docs/assets/kofi-fire.gif" height="12" style="display:inline;vertical-align:middle;" />
-      <span>Donate</span>
-    </span>
+    <img alt="Donate on Ko-fi" src="https://img.shields.io/badge/Donate-Ko--fi-FF5E5B?logo=kofi&logoColor=white" />
   </a>
 </p>
 
@@ -536,10 +533,7 @@ Do not commit `.env`, local databases, course files, or private API keys.
 
 <p align="center">
   <a href="https://ko-fi.com/nicetry247" target="_blank" rel="noopener noreferrer">
-    <span style="display:inline-flex;align-items:center;gap:8px;background:#ffffff;border:2px solid #29abe0;border-radius:999px;padding:8px 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:#24292f;box-shadow:0 4px 12px rgba(41,154,224,0.15);">
-      <img alt="☕" src="docs/assets/kofi-fire.gif" height="28" style="display:inline;vertical-align:middle;" />
-      <span>Donate</span>
-    </span>
+    <img alt="Donate on Ko-fi" src="https://img.shields.io/badge/Donate_on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" />
   </a>
 </p>
 
