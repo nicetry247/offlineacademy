@@ -50,7 +50,7 @@ ENV PORT=6767
 ENV HOSTNAME=0.0.0.0
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && apt-get install -y --no-install-recommends openssl ca-certificates gosu \
   && rm -rf /var/lib/apt/lists/* \
   && groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs
@@ -61,12 +61,18 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
-# Runtime writable folders. Users can bind-mount these from anywhere.
-RUN mkdir -p /app/My_Courses /app/prisma \
-  && chown -R nextjs:nodejs /app/My_Courses /app/prisma
+# Keep Prisma CLI available at runtime so fresh bind-mounted SQLite databases
+# can be initialized automatically before the server starts.
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=deps --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=deps --chown=nextjs:nodejs /app/package-lock.json ./package-lock.json
 
-USER nextjs
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+  && mkdir -p /app/My_Courses /app/prisma \
+  && chown -R nextjs:nodejs /app/My_Courses /app/prisma
 
 EXPOSE 6767
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "server.js"]
