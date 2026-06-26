@@ -15,6 +15,7 @@ export default function ScanPage() {
   const [result, setResult] = useState<{
     coursesCreated: number
     coursesUpdated: number
+    coursesDeleted: number
     modulesCreated: number
     modulesUpdated: number
     lessonsCreated: number
@@ -53,7 +54,9 @@ export default function ScanPage() {
 
       setResult(data)
       addLog(`Scan completed in ${data.duration}ms`)
-      addLog(`Courses: ${data.coursesCreated} created, ${data.coursesUpdated} updated`)
+      addLog(
+        `Courses: ${data.coursesCreated} created, ${data.coursesUpdated} updated, ${data.coursesDeleted} deleted`
+      )
       addLog(`Modules: ${data.modulesCreated} created, ${data.modulesUpdated} updated`)
       addLog(`Lessons: ${data.lessonsCreated} created, ${data.lessonsUpdated} updated`)
       

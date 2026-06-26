@@ -135,6 +135,7 @@ async function downloadCourseThumbnail(courseName: string, courseSlug: string): 
 interface ScanResult {
   coursesCreated: number
   coursesUpdated: number
+  coursesDeleted: number
   modulesCreated: number
   modulesUpdated: number
   lessonsCreated: number
@@ -249,6 +250,7 @@ interface ScanOptions {
 interface ScanResult {
   coursesCreated: number
   coursesUpdated: number
+  coursesDeleted: number
   modulesCreated: number
   modulesUpdated: number
   lessonsCreated: number
@@ -314,6 +316,7 @@ async function scanCourses(options: ScanOptions = {}): Promise<ScanResult> {
   const result: ScanResult = {
     coursesCreated: 0,
     coursesUpdated: 0,
+    coursesDeleted: 0,
     modulesCreated: 0,
     modulesUpdated: 0,
     lessonsCreated: 0,
@@ -444,6 +447,16 @@ async function scanCourses(options: ScanOptions = {}): Promise<ScanResult> {
           data: { thumbnail: finalThumbnail },
         })
       }
+    }
+
+    const foundSlugs = new Set(courses.map((c) => slugify(c.name)))
+    const staleCourses = existingCourses.filter((c) => !c.hidden && !foundSlugs.has(c.slug))
+    if (staleCourses.length > 0) {
+      const staleIds = staleCourses.map((c) => c.id)
+      await prisma.course.deleteMany({
+        where: { id: { in: staleIds } },
+      })
+      result.coursesDeleted = staleCourses.length
     }
 
   } catch (error) {
