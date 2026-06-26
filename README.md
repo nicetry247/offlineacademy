@@ -401,14 +401,8 @@ Do not commit `.env`, local databases, course files, or private API keys.
 
 ## License
 
-No license has been selected yet.
+OfflineAcademy is released under the **MIT License**.
 
-That means the source is visible if this repository is public, but **all rights are reserved by default**. Other people do not automatically have permission to reuse, modify, redistribute, or sell the code.
+You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, subject to the terms of the MIT License.
 
-If you want others to freely self-host, modify, and contribute to OfflineAcademy, consider adding an open-source license such as:
-
-- **MIT** — simple and permissive
-- **Apache-2.0** — permissive with explicit patent language
-- **GPL-3.0** — requires derivative works to remain open-source
-
-For a public portfolio project that may become a product later, keeping the license undecided is a reasonable temporary choice.
+See [`LICENSE`](LICENSE) for the full license text.
