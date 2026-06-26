@@ -231,30 +231,17 @@ http://localhost:6767
 
 Docker is the recommended deployment path for most users.
 
-### 1. Clone the repository
+### Option A: Use the published Docker Hub image
+
+After the image is published to Docker Hub, users can run OfflineAcademy without building from source.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/offlineacademy.git
+mkdir -p offlineacademy/My_Courses offlineacademy/prisma
 cd offlineacademy
-```
-
-### 2. Create `.env`
-
-```bash
-cp .env.example .env
-```
-
-### 3. Create local folders
-
-```bash
-mkdir -p My_Courses prisma
+curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/nicetry247/offlineacademy/main/docker-compose.hub.yml
+curl -fsSL -o .env https://raw.githubusercontent.com/nicetry247/offlineacademy/main/.env.example
 touch prisma/dev.db
-```
-
-### 4. Start the app
-
-```bash
-docker compose up --build -d
+docker compose up -d
 ```
 
 Open:
@@ -269,9 +256,20 @@ For LAN access, replace `localhost` with your server IP:
 http://YOUR_SERVER_IP:6767
 ```
 
+### Option B: Build locally from source
+
+```bash
+git clone https://github.com/nicetry247/offlineacademy.git
+cd offlineacademy
+cp .env.example .env
+mkdir -p My_Courses prisma
+touch prisma/dev.db
+docker compose up --build -d
+```
+
 ### Custom Course Folder
 
-You can store courses anywhere on the host. Update `docker-compose.yml` and map your folder to `/app/My_Courses` inside the container:
+You can store courses anywhere on the host. Update your Compose file and map your folder to `/app/My_Courses` inside the container:
 
 ```yaml
 volumes:
@@ -291,6 +289,25 @@ Examples:
 # Windows with Docker Desktop
 - C:/Users/you/Videos/Courses:/app/My_Courses
 ```
+
+### Publishing to Docker Hub
+
+Maintainers can publish manually:
+
+```bash
+docker login
+docker build -t nicetry247/offlineacademy:latest .
+docker push nicetry247/offlineacademy:latest
+```
+
+You can also automate Docker Hub publishing later with GitHub Actions. To do that, add repository secrets for:
+
+```text
+DOCKERHUB_USERNAME
+DOCKERHUB_TOKEN
+```
+
+Then add a workflow that builds and pushes `nicetry247/offlineacademy:latest` on pushes to `main` and version tags like `v1.0.0`.
 
 ---
 
