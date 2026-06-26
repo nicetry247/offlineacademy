@@ -231,9 +231,22 @@ http://localhost:6767
 
 Docker is the recommended deployment path for most users.
 
-### Option A: Use the published Docker Hub image
+### Option A: Use the Docker Hub image
 
-After the image is published to Docker Hub, users can run OfflineAcademy without building from source.
+OfflineAcademy is published on Docker Hub:
+
+```text
+https://hub.docker.com/r/nicetry247/offlineacademy
+```
+
+Available image tags:
+
+```text
+nicetry247/offlineacademy:latest
+nicetry247/offlineacademy:1.0.0
+```
+
+Users can run OfflineAcademy without building from source:
 
 ```bash
 mkdir -p offlineacademy/My_Courses offlineacademy/prisma
@@ -241,7 +254,14 @@ cd offlineacademy
 curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/nicetry247/offlineacademy/main/docker-compose.hub.yml
 curl -fsSL -o .env https://raw.githubusercontent.com/nicetry247/offlineacademy/main/.env.example
 touch prisma/dev.db
+docker compose pull
 docker compose up -d
+```
+
+Or pull the image directly:
+
+```bash
+docker pull nicetry247/offlineacademy:latest
 ```
 
 Open:
