@@ -1,0 +1,195 @@
+// Prisma Schema for OfflineU2
+// Models: Course, Module, Lesson, Progress
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  name        String
+  displayName String?
+  slug        String   @unique
+  path        String   @unique
+  thumbnail   String?
+  description String?
+  hidden      Boolean  @default(false)
+  favorited   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  modules     Module[]
+  progress    Progress[]
+  bookmarks   Bookmark[]
+  courseTags  CourseTag[]
+  tags        Tag[]    @relation("CourseTags")
+
+  @@index([slug])
+  @@index([path])
+  @@index([favorited])
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  order       Int      @default(0)
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lessons     Lesson[]
+  progress    Progress[]
+  bookmarks   Bookmark[]
+
+  @@unique([courseId, slug])
+  @@index([courseId, order])
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String
+  order       Int      @default(0)
+  moduleId    String
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  filePath    String
+  fileName    String
+  mimeType    String
+  duration    Int?
+  thumbnail   String?
+  type        String   @default("VIDEO")
+  subtitlePath String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  progress    Progress[]
+  bookmarks   Bookmark[]
+  quiz         Quiz?
+  quizAttempts  QuizAttempt[]
+
+  @@unique([moduleId, slug])
+  @@index([moduleId, order])
+  @@index([filePath])
+}
+
+model Progress {
+  id          String   @id @default(cuid())
+  userId      String   @default("local-user")
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  moduleId    String?
+  module      Module?  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lessonId    String?
+  lesson      Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed   Boolean  @default(false)
+  position    Int      @default(0)
+  lastWatched DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([userId, courseId])
+  @@index([userId, lastWatched])
+}
+
+model QuizAttempt {
+  id         String   @id @default(cuid())
+  userId     String   @default("local-user")
+  lessonId   String?
+  lesson     Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  score      Int      @default(0)
+  passed     Boolean  @default(false)
+  completed  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([userId, lessonId])
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  lessonId    String?  @unique
+  lesson      Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  source      String?
+  topic       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  questions   Question[]
+
+  @@index([lessonId])
+}
+
+model Question {
+  id          String    @id @default(cuid())
+  quizId      String
+  quiz        Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  type        String
+  text        String
+  options     String?
+  correctAnswer String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([quizId])
+}
+
+model Bookmark {
+  id          String   @id @default(cuid())
+  userId      String   @default("local-user")
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  moduleId    String
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  position    Int
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, lessonId])
+  @@index([userId, courseId])
+  @@index([userId, createdAt])
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  color     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  courseTags CourseTag[]
+  courses    Course[]  @relation("CourseTags")
+}
+
+model CourseTag {
+  courseId String
+  tagId    String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, tagId])
+  @@index([tagId])
+  @@index([courseId])
+}

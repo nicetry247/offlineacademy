@@ -1,0 +1,44 @@
+# Dependencies
+node_modules
+/.pnp
+.pnp.js
+
+# Next.js
+/.next
+/out
+
+# Production DBs and Prisma
+*.db
+*.db-journal
+/prisma/dev.db
+/prisma/dev.db-journal
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Test coverage
+coverage
+
+# Build caches
+.cache
+.turbo
+
+# Misc tooling
+.vercel
