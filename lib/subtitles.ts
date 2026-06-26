@@ -69,16 +69,12 @@ export function getSubtitleFormat(fileName: string): SubtitleFormat | null {
   return ext === 'vtt' || ext === 'srt' ? ext : null
 }
 
-export function parseSubtitleForVideo(
+function tryExactBasename(
   videoBaseName: string,
-  subtitleFileName: string,
-  src: string
+  subtitleBaseName: string,
+  src: string,
+  format: SubtitleFormat
 ): SubtitleTrackInput | null {
-  const format = getSubtitleFormat(subtitleFileName)
-  if (!format) return null
-
-  const subtitleBaseName = basename(subtitleFileName, extname(subtitleFileName))
-
   if (subtitleBaseName === videoBaseName) {
     return {
       src,
@@ -88,7 +84,15 @@ export function parseSubtitleForVideo(
       isDefault: true,
     }
   }
+  return null
+}
 
+function tryDottedLangSuffix(
+  videoBaseName: string,
+  subtitleBaseName: string,
+  src: string,
+  format: SubtitleFormat
+): SubtitleTrackInput | null {
   const languagePrefix = `${videoBaseName}.`
   if (!subtitleBaseName.startsWith(languagePrefix)) return null
 
@@ -103,6 +107,59 @@ export function parseSubtitleForVideo(
     format,
     isDefault: lang === 'en',
   }
+}
+
+function tryEmbeddedLangSegment(
+  videoBaseName: string,
+  subtitleBaseName: string,
+  src: string,
+  format: SubtitleFormat
+): SubtitleTrackInput | null {
+  const subtitleParts = subtitleBaseName.split('-')
+  const videoParts = videoBaseName.split('-')
+  if (subtitleParts.length < videoParts.length + 1) return null
+
+  for (let index = 1; index < subtitleParts.length - 1; index += 1) {
+    const candidateParts = [...subtitleParts]
+    candidateParts.splice(index, 1)
+    if (candidateParts.join('-') !== videoBaseName) continue
+
+    const rawLanguage = subtitleParts[index]
+    if (!rawLanguage || rawLanguage.includes('/')) continue
+
+    const lang = normalizeSubtitleLang(rawLanguage)
+    return {
+      src,
+      lang,
+      label: languageCodeToLabel(lang),
+      format,
+      isDefault: lang === 'en',
+    }
+  }
+
+  return null
+}
+
+export function parseSubtitleForVideo(
+  videoBaseName: string,
+  subtitleFileName: string,
+  src: string
+): SubtitleTrackInput | null {
+  const format = getSubtitleFormat(subtitleFileName)
+  if (!format) return null
+
+  const subtitleBaseName = basename(subtitleFileName, extname(subtitleFileName))
+
+  const direct = tryExactBasename(videoBaseName, subtitleBaseName, src, format)
+  if (direct) return direct
+
+  const dotted = tryDottedLangSuffix(videoBaseName, subtitleBaseName, src, format)
+  if (dotted) return dotted
+
+  const embedded = tryEmbeddedLangSegment(videoBaseName, subtitleBaseName, src, format)
+  if (embedded) return embedded
+
+  return null
 }
 
 export function buildSubtitleTrackMap(
