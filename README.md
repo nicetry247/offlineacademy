@@ -31,6 +31,7 @@
 - [Tech Stack](#tech-stack)
 - [Quick Start: Docker Hub](#quick-start-docker-hub)
 - [Other Deployment Options](#other-deployment-options)
+- [CI/CD Automation](#cicd-automation)
 - [Configuration](#configuration)
 - [Course Folder Structure](#course-folder-structure)
 - [Data & Persistence](#data--persistence)
@@ -170,7 +171,7 @@ Deploy        Docker Hub / Docker Compose recommended; local Node.js supported
 
 Docker is the recommended way to run OfflineAcademy.
 
-It avoids local Node.js setup, uses the published image, and keeps your courses/database mounted outside the container.
+It avoids local Node.js setup, uses the published image, and keeps your courses and database safely mounted outside the container.
 
 ### Prerequisites
 
@@ -181,7 +182,7 @@ It avoids local Node.js setup, uses the published image, and keeps your courses/
 ### 1. Create an app folder
 
 ```bash
-mkdir -p offlineacademy/My_Courses offlineacademy/prisma
+mkdir -p offlineacademy/My_Courses offlineacademy/prisma_data
 cd offlineacademy
 ```
 
@@ -192,33 +193,22 @@ curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/nicetry247/of
 curl -fsSL -o .env https://raw.githubusercontent.com/nicetry247/offlineacademy/main/.env.example
 ```
 
-### 3. Create the SQLite database file and set bind-mount permissions
+### 3. Start OfflineAcademy
 
 ```bash
-touch prisma/dev.db
-chmod -R a+rX My_Courses
-chmod 664 prisma/dev.db
-```
-
-Docker bind mounts keep the host filesystem permissions. Creating `My_Courses` and `prisma/dev.db` before `docker compose up` prevents Docker from creating them as `root`, and the `chmod` commands make the course folder readable by the container.
-
-### 4. Start OfflineAcademy
-
-```bash
-docker compose pull
 docker compose up -d
 ```
 
 Open:
 
 ```text
-http://localhost:6767
+http://localhost:6969
 ```
 
 For another device on your LAN, replace `localhost` with your server IP:
 
 ```text
-http://YOUR_SERVER_IP:6767
+http://YOUR_SERVER_IP:6969
 ```
 
 ### Docker Hub Image
@@ -254,10 +244,25 @@ Use this if you want to modify the app and build your own image locally.
 git clone https://github.com/nicetry247/offlineacademy.git
 cd offlineacademy
 cp .env.example .env
-mkdir -p My_Courses prisma
-touch prisma/dev.db
+mkdir -p My_Courses prisma_data
 docker compose up --build -d
 ```
+
+The source-build Compose file uses the same runtime layout as the Docker Hub deployment:
+
+```yaml
+ports:
+  - "6969:6767"
+environment:
+  DATABASE_URL: file:/app/prisma/data/dev.db
+  COURSES_ROOT: /app/My_Courses
+  NEXT_PUBLIC_APP_URL: http://localhost:6969
+volumes:
+  - ./My_Courses:/app/My_Courses
+  - ./prisma_data:/app/prisma/data
+```
+
+The `prisma_data` directory safely persists the SQLite database. The container creates and manages `dev.db` inside `/app/prisma/data`, so users do not need to pre-create an empty database file.
 
 ### Local Node.js development
 
@@ -285,11 +290,13 @@ cp .env.example .env
 Edit `.env` if needed:
 
 ```env
-DATABASE_URL="file:./dev.db"
-COURSES_ROOT="./My_Courses"
-NEXT_PUBLIC_APP_URL="http://localhost:6767"
+DATABASE_URL="file:/app/prisma/data/dev.db"
+COURSES_ROOT="/app/My_Courses"
+NEXT_PUBLIC_APP_URL="http://localhost:6969"
 QUIZAPI_KEY=""
 ```
+
+For non-Docker local Node.js development, use paths that exist on your local machine, such as `DATABASE_URL="file:./prisma/dev.db"` and `COURSES_ROOT="./My_Courses"`.
 
 #### 3. Install dependencies
 
@@ -316,20 +323,40 @@ Place your course folders inside `My_Courses`.
 
 ```bash
 npm run build
-npx next start -p 6767
+npx next start -p 6969
 ```
 
-### Custom Course Folder
+### Custom Course Folder, NAS, or USB Drive
 
-You can store courses anywhere on the host. Update your Compose file and map your folder to `/app/My_Courses` inside the container:
+Courses should live outside the Docker image. Docker maps a host folder into the container using this pattern:
+
+```text
+HOST_PATH:CONTAINER_PATH
+```
+
+The container path should stay:
+
+```text
+/app/My_Courses
+```
+
+For the default local folder, use:
 
 ```yaml
 volumes:
-  - /path/to/your/courses:/app/My_Courses
-  - ./prisma/dev.db:/app/prisma/dev.db
+  - ./My_Courses:/app/My_Courses
+  - ./prisma_data:/app/prisma/data
 ```
 
-Examples:
+For a NAS, USB datastore, or other external drive, change only the left side of the course mount:
+
+```yaml
+volumes:
+  - /mnt/usb-datastore/courses:/app/My_Courses
+  - ./prisma_data:/app/prisma/data
+```
+
+More examples:
 
 ```yaml
 # Linux
@@ -342,36 +369,17 @@ Examples:
 - C:/Users/you/Videos/Courses:/app/My_Courses
 ```
 
-#### Docker bind-mount permissions
+Keep the app's internal course setting at the container path:
 
-On Linux, Docker bind mounts use the host folder's existing permissions. If the folder does not exist before `docker compose up`, Docker may create it as `root`, which can make course scanning fail or force manual `chown` later.
-
-Recommended setup:
-
-```bash
-mkdir -p My_Courses prisma
-touch prisma/dev.db
-chmod -R a+rX My_Courses
-chmod 664 prisma/dev.db
+```text
+/app/My_Courses
 ```
 
-If your course files were copied as `root` or live on a restrictive mounted disk, make them readable by the container:
-
-```bash
-chmod -R a+rX /path/to/your/courses
-```
-
-If you enable features that write quiz cache files into course folders, the container also needs write access to the mounted course directory. One option is:
-
-```bash
-sudo chown -R 1001:1001 /path/to/your/courses
-```
-
-For scan-only use, read access is usually enough.
+This lets Docker handle the host-to-container translation while OfflineAcademy always scans the same internal path.
 
 ### Publishing to Docker Hub
 
-Maintainers can publish manually:
+Maintainers can publish manually if needed:
 
 ```bash
 docker login
@@ -381,14 +389,29 @@ docker push nicetry247/offlineacademy:latest
 docker push nicetry247/offlineacademy:1.0.0
 ```
 
-You can also automate Docker Hub publishing later with GitHub Actions. To do that, add repository secrets for:
+---
+
+## CI/CD Automation
+
+OfflineAcademy includes a GitHub Actions workflow for automated Docker publishing:
 
 ```text
-DOCKERHUB_USERNAME
-DOCKERHUB_TOKEN
+.github/workflows/docker-build.yml
 ```
 
-Then add a workflow that builds and pushes `nicetry247/offlineacademy:latest` on pushes to `main` and version tags like `v1.0.0`.
+When changes are pushed to the `main` branch, the workflow builds the standalone Next.js Docker image and pushes it directly to Docker Hub:
+
+```text
+nicetry247/offlineacademy
+```
+
+Version tags are supported too. Cutting a tag such as:
+
+```text
+v1.0.0
+```
+
+publishes the matching Docker image tag alongside `latest`. This keeps the public Docker Hub image aligned with the source repository without requiring manual release builds.
 
 ---
 
@@ -396,9 +419,9 @@ Then add a workflow that builds and pushes `nicetry247/offlineacademy:latest` on
 
 | Variable | Required | Purpose | Example |
 |---|---:|---|---|
-| `DATABASE_URL` | Yes | SQLite database path | `file:./dev.db` |
-| `COURSES_ROOT` | Yes | Course folder path inside the app/container | `./My_Courses` |
-| `NEXT_PUBLIC_APP_URL` | Recommended | Public app URL used by metadata and links | `http://localhost:6767` |
+| `DATABASE_URL` | Yes | SQLite database path inside the container | `file:/app/prisma/data/dev.db` |
+| `COURSES_ROOT` | Yes | Course folder path inside the container | `/app/My_Courses` |
+| `NEXT_PUBLIC_APP_URL` | Recommended | Public app URL used by metadata and links | `http://localhost:6969` |
 | `QUIZAPI_KEY` | Optional | QuizAPI key for quiz generation | `qa_...` |
 
 Settings can also be managed inside the app at:
@@ -434,10 +457,10 @@ Supported video extensions include common browser-playable formats such as `.mp4
 OfflineAcademy stores app data locally.
 
 ```text
-SQLite database    prisma/dev.db
-Course files       My_Courses/ or your configured course mount
+SQLite database    prisma_data/dev.db
+Course files       My_Courses/ or your configured host course mount
 Environment        .env
-Quiz cache         Course/module folders where generated
+Quiz cache         Course/module folders when generated
 ```
 
 Important user data:
@@ -462,7 +485,7 @@ npm ci
 npx prisma generate
 npx prisma db push
 npm run build
-npx next start -p 6767
+npx next start -p 6969
 ```
 
 ### Docker
@@ -479,12 +502,12 @@ docker compose up --build -d
 Back up these items regularly:
 
 ```text
-prisma/dev.db       Main SQLite database
+prisma_data/dev.db  Main SQLite database
 .env                Local configuration and optional API key
 My_Courses/         Your source course library, if not backed up elsewhere
 ```
 
-A simple backup can be as easy as copying `prisma/dev.db` somewhere safe before updates.
+A simple backup can be as easy as copying `prisma_data/dev.db` somewhere safe before updates.
 
 ---
 

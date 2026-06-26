@@ -4,20 +4,20 @@ services:
     container_name: offlineacademy
     restart: unless-stopped
     ports:
-      - "6767:6767"
+      # Host:Container
+      - "6969:6767"
     env_file:
       - .env
     environment:
       NODE_ENV: production
       PORT: 6767
       HOSTNAME: 0.0.0.0
-      DATABASE_URL: file:./dev.db
-      COURSES_ROOT: ./My_Courses
-      NEXT_PUBLIC_APP_URL: http://localhost:6767
+      DATABASE_URL: file:/app/prisma/data/dev.db
+      COURSES_ROOT: /app/My_Courses
+      NEXT_PUBLIC_APP_URL: http://localhost:6969
     volumes:
-      # Put your course folders wherever you want on the host,
-      # then map that folder to /app/My_Courses inside the container.
+      # Course folders stay on the host and are mounted into the container.
       - ./My_Courses:/app/My_Courses
 
-      # Persist the SQLite database outside the image.
-      - ./prisma/dev.db:/app/prisma/dev.db
+      # Directory-based database persistence. The container creates dev.db inside this folder.
+      - ./prisma_data:/app/prisma/data
