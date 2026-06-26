@@ -18,7 +18,12 @@
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
   <img alt="Prisma" src="https://img.shields.io/badge/Prisma-SQLite-2D3748?logo=prisma" />
   <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white" />
-  <a href="https://ko-fi.com/nicetry247"><img alt="Support OfflineAcademy on Ko-fi" src="docs/assets/kofi-fire.gif" height="20" /></a>
+  <a href="https://ko-fi.com/nicetry247" target="_blank" rel="noopener noreferrer">
+    <span style="display:inline-flex;align-items:center;gap:4px;background:#ffffff;border:1px solid #d0d7de;border-radius:999px;padding:2px 7px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:600;color:#24292f;line-height:14px;box-shadow:0 1px 0 rgba(0,0,0,0.04);">
+      <img alt="☕" src="docs/assets/kofi-fire.gif" height="12" style="display:inline;vertical-align:middle;" />
+      <span>Donate</span>
+    </span>
+  </a>
 </p>
 
 ---
@@ -530,14 +535,17 @@ Do not commit `.env`, local databases, course files, or private API keys.
 ## Support the Project
 
 <p align="center">
-  <a href="https://ko-fi.com/nicetry247">
-    <img src="docs/assets/kofi-fire.gif" alt="Support OfflineAcademy on Ko-fi" width="96" />
+  <a href="https://ko-fi.com/nicetry247" target="_blank" rel="noopener noreferrer">
+    <span style="display:inline-flex;align-items:center;gap:8px;background:#ffffff;border:2px solid #29abe0;border-radius:999px;padding:8px 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:#24292f;box-shadow:0 4px 12px rgba(41,154,224,0.15);">
+      <img alt="☕" src="docs/assets/kofi-fire.gif" height="28" style="display:inline;vertical-align:middle;" />
+      <span>Donate</span>
+    </span>
   </a>
 </p>
 
 <p align="center">
   <strong>If OfflineAcademy saves you time, feeds your homelab brain, or keeps your course chaos under control, consider fueling the next round.</strong><br />
-  <a href="https://ko-fi.com/nicetry247"><strong>Support OfflineAcademy on Ko-fi →</strong></a>
+  <a href="https://ko-fi.com/nicetry247" target="_blank" rel="noopener noreferrer"><strong>Support OfflineAcademy on Ko-fi →</strong></a>
 </p>
 
 ---
