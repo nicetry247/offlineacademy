@@ -24,4 +24,4 @@ services:
       - ./My_Courses:/app/My_Courses
       
       # Automatically creates ./prisma_data on the host to hold dev.db safely
-      - ./prisma_data:/app/prisma
+      - ./prisma_data:/app/prisma/data
