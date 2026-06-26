@@ -7,21 +7,19 @@ services:
     restart: unless-stopped
     ports:
       # Host:Container
-      - "6969:6969"
+      - "6969:6767"
     env_file:
       - .env
     environment:
       NODE_ENV: production
-      PORT: 6969
+      PORT: 6767
       HOSTNAME: 0.0.0.0
-      # Points exactly to where the volume is mounted inside the container
-      DATABASE_URL: file:/app/prisma/dev.db
+      DATABASE_URL: file:/app/prisma/data/dev.db
       COURSES_ROOT: /app/My_Courses
-      # Matches the port mapped to your host machine
       NEXT_PUBLIC_APP_URL: http://localhost:6969
     volumes:
-      # Automatically creates ./My_Courses on the host if it doesn't exist
-      - /mnt/usb-datastore/courses:/app/My_Courses
-      
-      # Automatically creates ./prisma_data on the host to hold dev.db safely
+      # Course folders stay on the host and are mounted into the container.
+      - ./My_Courses:/app/My_Courses
+
+      # Directory-based database persistence. The container creates dev.db inside this folder.
       - ./prisma_data:/app/prisma/data
