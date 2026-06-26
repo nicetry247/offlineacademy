@@ -445,12 +445,38 @@ My_Courses/
     │   └── 01 - Welcome.mp4
     ├── 02 - Core Concepts/
     │   ├── 01 - Lesson One.mp4
+    │   ├── 01 - Lesson One.en.vtt
+    │   ├── 01 - Lesson One.es.vtt
+    │   ├── 01 - Lesson One.ja.vtt
     │   └── 02 - Lesson Two.mp4
     └── 03 - Practice/
         └── 01 - Lab Walkthrough.mp4
 ```
 
 Supported video extensions include common browser-playable formats such as `.mp4`, plus additional local media formats depending on browser support.
+
+### Subtitles
+
+OfflineAcademy supports subtitle files stored beside the matching video. Use `.vtt` for the best browser compatibility; `.srt` files are detected as best-effort tracks.
+
+Single subtitle track:
+
+```text
+01 - Lesson.mp4
+01 - Lesson.vtt
+```
+
+Multiple language tracks:
+
+```text
+01 - Lesson.mp4
+01 - Lesson.en.vtt
+01 - Lesson.es.vtt
+01 - Lesson.ja.vtt
+01 - Lesson.fil.vtt
+```
+
+Language suffixes become selectable tracks in the video player settings menu. Examples: `en`, `es`, `fr`, `ja`, `fil`, `zh-CN`, `pt-BR`.
 
 ---
 

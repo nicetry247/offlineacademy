@@ -7,10 +7,17 @@ import { cn, formatTime } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { KeyboardShortcutsOverlay } from '@/components/KeyboardShortcutsOverlay'
 
+interface VideoSubtitleTrack {
+  src: string
+  srcLang: string
+  label: string
+  default?: boolean
+}
+
 interface VideoPlayerProps {
   src: string
   poster?: string
-  subtitles?: string
+  subtitles?: VideoSubtitleTrack[]
   onTimeUpdate?: (time: number) => void
   onEnded?: () => void
   onProgressSave?: (time: number) => void
@@ -46,6 +53,10 @@ export function VideoPlayer({
   const [isPiPActive, setIsPiPActive] = useState(false)
   const [hoverProgress, setHoverProgress] = useState<{ time: number; x: number } | null>(null)
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
+  const [selectedSubtitle, setSelectedSubtitle] = useState<number | 'off'>(() => {
+    const defaultIndex = subtitles?.findIndex(track => track.default) ?? -1
+    return defaultIndex >= 0 ? defaultIndex : 'off'
+  })
   const settingsMenuRef = useRef<HTMLDivElement>(null)
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const progressSaveTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
@@ -385,6 +396,20 @@ export function VideoPlayer({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showSettingsMenu])
 
+  useEffect(() => {
+    const defaultIndex = subtitles?.findIndex(track => track.default) ?? -1
+    setSelectedSubtitle(defaultIndex >= 0 ? defaultIndex : 'off')
+  }, [subtitles])
+
+  useEffect(() => {
+    const textTracks = videoRef.current?.textTracks
+    if (!textTracks) return
+
+    for (let index = 0; index < textTracks.length; index += 1) {
+      textTracks[index].mode = selectedSubtitle === index ? 'showing' : 'disabled'
+    }
+  }, [selectedSubtitle, subtitles])
+
   return (
     <div
       className="video-player-container"
@@ -410,9 +435,16 @@ export function VideoPlayer({
           onClick={togglePlay}
           className="w-full h-full cursor-pointer"
         >
-          {subtitles && (
-            <track kind="subtitles" src={subtitles} srcLang="en" label="English" default />
-          )}
+          {subtitles?.map((track, index) => (
+            <track
+              key={`${track.srcLang}-${track.src}`}
+              kind="subtitles"
+              src={track.src}
+              srcLang={track.srcLang}
+              label={track.label}
+              default={selectedSubtitle === index}
+            />
+          ))}
         </video>
       </div>
 
@@ -589,7 +621,7 @@ export function VideoPlayer({
 
               {showSettingsMenu && (
                 <div
-                  className="absolute bottom-full right-0 mb-2 w-40 glass-card-elevated rounded-lg p-2 shadow-xl border border-white/10 animate-in zoom-in-95 z-20"
+                  className="absolute bottom-full right-0 mb-2 w-52 glass-card-elevated rounded-lg p-2 shadow-xl border border-white/10 animate-in zoom-in-95 z-20"
                   role="menu"
                 >
                   <div className="px-3 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">Speed</div>
@@ -611,6 +643,39 @@ export function VideoPlayer({
                       {playbackRate === rate && <Check className="h-4 w-4" />}
                     </button>
                   ))}
+                  {subtitles && subtitles.length > 0 && (
+                    <>
+                      <hr className="border-white/10 my-1" />
+                      <div className="px-3 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider">Subtitles</div>
+                      <button
+                        onClick={() => {
+                          setSelectedSubtitle('off')
+                          setShowSettingsMenu(false)
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-sm text-white hover:bg-white/10 rounded ${selectedSubtitle === 'off' ? 'bg-primary/20 text-primary' : ''}`}
+                        role="menuitemradio"
+                        aria-checked={selectedSubtitle === 'off'}
+                      >
+                        <span>Off</span>
+                        {selectedSubtitle === 'off' && <Check className="h-4 w-4" />}
+                      </button>
+                      {subtitles.map((track, index) => (
+                        <button
+                          key={`${track.srcLang}-${track.src}`}
+                          onClick={() => {
+                            setSelectedSubtitle(index)
+                            setShowSettingsMenu(false)
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2 text-sm text-white hover:bg-white/10 rounded ${selectedSubtitle === index ? 'bg-primary/20 text-primary' : ''}`}
+                          role="menuitemradio"
+                          aria-checked={selectedSubtitle === index}
+                        >
+                          <span className="truncate">{track.label}</span>
+                          {selectedSubtitle === index && <Check className="h-4 w-4 shrink-0" />}
+                        </button>
+                      ))}
+                    </>
+                  )}
                   <hr className="border-white/10 my-1" />
                   <button
                     onClick={() => setShowShortcuts(true)}

@@ -22,6 +22,12 @@ export default async function WatchPage({ params, searchParams }: WatchPageProps
         progress: {
           where: { userId: 'local-user' },
         },
+        subtitles: {
+          orderBy: [
+            { isDefault: 'desc' },
+            { label: 'asc' },
+          ],
+        },
       },
     })
 
