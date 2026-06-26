@@ -32,6 +32,7 @@
 - [Updating](#updating)
 - [Backup](#backup)
 - [Security Notes](#security-notes)
+- [Support the Project](#support-the-project)
 - [License](#license)
 
 ---
@@ -495,6 +496,21 @@ Before exposing it to the public internet, add:
 - careful handling of `.env` and API keys
 
 Do not commit `.env`, local databases, course files, or private API keys.
+
+---
+
+## Support the Project
+
+<p align="center">
+  <a href="https://ko-fi.com/nicetry247">
+    <img src="docs/assets/kofi-fire.gif" alt="Support OfflineAcademy on Ko-fi" width="96" />
+  </a>
+</p>
+
+<p align="center">
+  <strong>If OfflineAcademy saves you time, feeds your homelab brain, or keeps your course chaos under control, consider fueling the next round.</strong><br />
+  <a href="https://ko-fi.com/nicetry247"><strong>Support OfflineAcademy on Ko-fi →</strong></a>
+</p>
 
 ---
 
