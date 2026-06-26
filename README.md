@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/offline-academy-banner.png" alt="OfflineAcademy — Your Personal Offline Learning Center" />
+</p>
+
 # OfflineAcademy
 
 <p align="center">
