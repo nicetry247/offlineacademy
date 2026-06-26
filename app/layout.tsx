@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'http://localhost:6767',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:6969',
     siteName: 'OfflineAcademy',
     title: 'OfflineAcademy — Your Personal Offline Learning Center',
     description: 'A self-hosted, privacy-first learning platform for offline courses.',

@@ -43,8 +43,9 @@ interface AnalyticsData {
 }
 
 async function getAnalyticsData(): Promise<AnalyticsData> {
-  const res = await fetch('http://127.0.0.1:6767/api/progress?type=analytics', {
+  const res = await fetch('/api/progress?type=analytics', {
     cache: 'no-store',
+    next: { tags: ['analytics'] },
   })
   if (!res.ok) {
     throw new Error('Failed to fetch analytics')
