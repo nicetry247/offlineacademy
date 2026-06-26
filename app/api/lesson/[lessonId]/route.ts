@@ -18,6 +18,9 @@ export async function GET(
         progress: {
           where: { userId: 'local-user' },
         },
+        subtitles: {
+          orderBy: { lang: 'asc' },
+        },
       },
     })
 
