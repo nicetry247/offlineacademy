@@ -186,11 +186,15 @@ curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/nicetry247/of
 curl -fsSL -o .env https://raw.githubusercontent.com/nicetry247/offlineacademy/main/.env.example
 ```
 
-### 3. Create the SQLite database file
+### 3. Create the SQLite database file and set bind-mount permissions
 
 ```bash
 touch prisma/dev.db
+chmod -R a+rX My_Courses
+chmod 664 prisma/dev.db
 ```
+
+Docker bind mounts keep the host filesystem permissions. Creating `My_Courses` and `prisma/dev.db` before `docker compose up` prevents Docker from creating them as `root`, and the `chmod` commands make the course folder readable by the container.
 
 ### 4. Start OfflineAcademy
 
@@ -331,6 +335,33 @@ Examples:
 # Windows with Docker Desktop
 - C:/Users/you/Videos/Courses:/app/My_Courses
 ```
+
+#### Docker bind-mount permissions
+
+On Linux, Docker bind mounts use the host folder's existing permissions. If the folder does not exist before `docker compose up`, Docker may create it as `root`, which can make course scanning fail or force manual `chown` later.
+
+Recommended setup:
+
+```bash
+mkdir -p My_Courses prisma
+touch prisma/dev.db
+chmod -R a+rX My_Courses
+chmod 664 prisma/dev.db
+```
+
+If your course files were copied as `root` or live on a restrictive mounted disk, make them readable by the container:
+
+```bash
+chmod -R a+rX /path/to/your/courses
+```
+
+If you enable features that write quiz cache files into course folders, the container also needs write access to the mounted course directory. One option is:
+
+```bash
+sudo chown -R 1001:1001 /path/to/your/courses
+```
+
+For scan-only use, read access is usually enough.
 
 ### Publishing to Docker Hub
 
