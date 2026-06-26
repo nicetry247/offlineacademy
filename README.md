@@ -533,7 +533,7 @@ Do not commit `.env`, local databases, course files, or private API keys.
 
 <p align="center">
   <a href="https://ko-fi.com/nicetry247" target="_blank" rel="noopener noreferrer">
-    <img alt="Donate on Ko-fi" src="https://img.shields.io/badge/Donate_on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" />
+    <img src="docs/assets/kofi-fire.gif" alt="Support OfflineAcademy on Ko-fi" width="96" />
   </a>
 </p>
 
