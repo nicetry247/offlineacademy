@@ -597,7 +597,7 @@ This release focuses on making OfflineAcademy smoother for real course libraries
 #### Fixed
 
 - Same-folder subtitle imports for files stored outside the app container and mounted into the course library.
-- Subtitle filename matching for common Udemy-style exports, including patterns like `-english-onehack.us.srt` and `-persian-onehack.us.srt`.
+- Subtitle filename matching for common Udemy-style exports, including patterns like `-english-test.us.srt` and `-persian-test.us.srt`.
 - Lesson API subtitle ordering so tracks load consistently in the player.
 - Analytics page data loading by reading analytics directly on the server instead of relying on a fragile internal fetch.
 
@@ -605,4 +605,4 @@ This release focuses on making OfflineAcademy smoother for real course libraries
 
 - Course scanning now better handles real-world course folder layouts.
 - Subtitle files are served as browser-compatible `text/vtt`, including converted SRT files.
-- Local development workflow was verified on port `6767` after cache cleanup and rebuild.
+- Local development workflow was verified on port `6969` after cache cleanup and rebuild.
