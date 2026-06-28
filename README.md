@@ -42,6 +42,7 @@
 - [Security Notes](#security-notes)
 - [Support the Project](#support-the-project)
 - [License](#license)
+- [Changelog](#changelog)
 
 ---
 
@@ -354,7 +355,7 @@ For a NAS, USB datastore, or other external drive, change only the left side of 
 
 ```yaml
 volumes:
-  - /mnt/usb-datastore/courses:/app/My_Courses
+  - /path/to/your/courses:/app/My_Courses
   - ./prisma_data:/app/prisma/data
 ```
 
@@ -577,3 +578,31 @@ OfflineAcademy is released under the **MIT License**.
 You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, subject to the terms of the MIT License.
 
 See [`LICENSE`](LICENSE) for the full license text.
+
+---
+
+## Changelog
+
+### v1.0.2 — Subtitle & Analytics Polish
+
+This release focuses on making OfflineAcademy smoother for real course libraries, especially Udemy-style folders with external subtitle files.
+
+#### Added
+
+- Multi-language subtitle support for local course videos.
+- SRT and VTT subtitle detection during course scans.
+- Visible subtitle controls in the video player when tracks are available.
+- Support for multiple subtitle tracks per lesson, such as English and Persian.
+
+#### Fixed
+
+- Same-folder subtitle imports for files stored outside the app container and mounted into the course library.
+- Subtitle filename matching for common Udemy-style exports, including patterns like `-english-onehack.us.srt` and `-persian-onehack.us.srt`.
+- Lesson API subtitle ordering so tracks load consistently in the player.
+- Analytics page data loading by reading analytics directly on the server instead of relying on a fragile internal fetch.
+
+#### Improved
+
+- Course scanning now better handles real-world course folder layouts.
+- Subtitle files are served as browser-compatible `text/vtt`, including converted SRT files.
+- Local development workflow was verified on port `6767` after cache cleanup and rebuild.
